@@ -1,0 +1,23 @@
+{
+  "name": "async-server",
+  "version": "1.0.0",
+  "description": "async sample server",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "type": "module",
+  "keywords": [
+    "async"
+  ],
+  "author": "rishi",
+  "license": "ISC",
+  "devDependencies": {
+    "express": "^5.1.0"
+  },
+  "dependencies": {
+    "axios": "^1.10.0",
+    "winston": "^3.17.0"
+  }
+}
