@@ -4,15 +4,40 @@ import { v4 as uuidv4 } from 'uuid';
 import { createLogger, format as _format, transports as _transports } from 'winston';
 const app = express();
 const port = 8005;
-const VALID_API_KEY = process.env.API_KEY || 'atheeva_secret_key'; // Replace with your actual API key
-// Middleware to check for API Key
-function authenticateApiKey(req, res, next) {
-    const apiKey = req.headers['x-api-key'] || req.query.api_key;
-    if (!apiKey || apiKey !== VALID_API_KEY) {
-        return res.status(403).send('Forbidden: Invalid API Key');
+// const VALID_API_KEY = process.env.API_KEY || 'atheeva_secret_key'; // Replace with your actual API key
+// // Middleware to check for API Key
+// function authenticateApiKey(req, res, next) {
+//     const apiKey = req.headers['x-api-key'] || req.query.api_key;
+//     if (!apiKey || apiKey !== VALID_API_KEY) {
+//         return res.status(403).send('Forbidden: Invalid API Key');
+//     }
+//     next();
+// }
+
+
+const VALID_USERNAME = process.env.BASIC_AUTH_USERNAME || 'user';
+const VALID_PASSWORD = process.env.BASIC_AUTH_PASSWORD || 'redhawk';
+
+function authenticateBasicAuth(req, res, next) {
+    const authHeader = req.headers['authorization'];
+
+    if (!authHeader || !authHeader.startsWith('Basic ')) {
+        return res.status(401).send('Unauthorized: Missing or invalid Authorization header');
     }
+
+    const base64Credentials = authHeader.split(' ')[1];
+    const credentials = Buffer.from(base64Credentials, 'base64').toString('ascii');
+    const [username, password] = credentials.split(':');
+
+    if (username !== VALID_USERNAME || password !== VALID_PASSWORD) {
+        return res.status(403).send('Forbidden: Invalid credentials');
+    }
+
     next();
 }
+
+
+
 // Configure Winston logger
 const logger = createLogger({
     level: 'info',
@@ -63,32 +88,32 @@ app.post('/callback', authenticateApiKey, async (req, res) => {
     handler_async_response(callbackUrl, tenantId, correlationId, miliseconds);
 
 });
-// app.post('/callback_with_no_auth', async (req, res) => {
-//     logger.info('Received request', { data: req.body });
-//     const callbackUrl = req.get('callbackUrl');
-//     console.log("callback url is", callbackUrl)
-//     console.log("headers is", req.headers)
-//     // Validate callback URL
-//     if (!callbackUrl) {
-//         logger.error('Missing callback URL');
-//         return res.status(400).json({ error: 'X-Callback-URL header is required' });
-//     }
-//     let tenantId, correlationId;
-//     try {
-//         // Validate URL format
-//         const parts = new URL(callbackUrl).pathname.split('/');
-//         tenantId = parts[2];
-//         correlationId = parts[3];
-//     } catch (error) {
-//         logger.error('Invalid callback URL', { callbackUrl, error: error.message });
-//         return res.status(400).json({ error: 'Invalid callback URL' });
-//     }
-//     const myUuid = uuidv4();
-//     console.log("my uuid is", myUuid)
-//     res.status(205).json({ flow_instance_id: myUuid });
-//     handler_async_response(callbackUrl, tenantId, correlationId, miliseconds);
+app.post('/callback_with_no_auth', async (req, res) => {
+    logger.info('Received request', { data: req.body });
+    const callbackUrl = req.get('callbackUrl');
+    console.log("callback url is", callbackUrl)
+    console.log("headers is", req.headers)
+    // Validate callback URL
+    if (!callbackUrl) {
+        logger.error('Missing callback URL');
+        return res.status(400).json({ error: 'X-Callback-URL header is required' });
+    }
+    let tenantId, correlationId;
+    try {
+        // Validate URL format
+        const parts = new URL(callbackUrl).pathname.split('/');
+        tenantId = parts[2];
+        correlationId = parts[3];
+    } catch (error) {
+        logger.error('Invalid callback URL', { callbackUrl, error: error.message });
+        return res.status(400).json({ error: 'Invalid callback URL' });
+    }
+    const myUuid = uuidv4();
+    console.log("my uuid is", myUuid)
+    res.status(205).json({ flow_instance_id: myUuid });
+    handler_async_response(callbackUrl, tenantId, correlationId, miliseconds);
 
-// });
+});
 async function handler_async_response(callbackUrl, tenantId, correlationId, milliseconds) {
     try {
         // Perform callback
