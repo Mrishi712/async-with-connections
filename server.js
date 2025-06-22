@@ -61,7 +61,7 @@ app.use((req, res, next) => {
     });
     next();
 });
-app.post('/callback', authenticateApiKey, async (req, res) => {
+app.post('/callback', authenticateBasicAuth, async (req, res) => {
     logger.info('Received request', { data: req.body });
     const miliseconds = parseInt(req.body.time)
     const callbackUrl = req.get('callbackUrl');
