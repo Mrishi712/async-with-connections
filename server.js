@@ -50,7 +50,7 @@ const logger = createLogger({
         new _transports.Console()
     ]
 });
-app.use(json());
+//app.use(json());
 // Middleware to log all incoming requests
 app.use((req, res, next) => {
     logger.info('Incoming request', {
