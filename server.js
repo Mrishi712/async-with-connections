@@ -114,6 +114,14 @@ app.post('/callback_with_no_auth', async (req, res) => {
     handler_async_response(callbackUrl, tenantId, correlationId, miliseconds);
 
 });
+
+app.post('/log-payload', authenticateBasicAuth, (req, res) => {
+    console.log("+++++++++++++++++++++++++++++++");
+    console.log('Received payload', req.body);
+    console.log("+++++++++++++++++++++++++++++++");
+    res.json({ message: 'Payload received',payload: req.body });
+});
+
 async function handler_async_response(callbackUrl, tenantId, correlationId, milliseconds) {
     try {
         // Perform callback
