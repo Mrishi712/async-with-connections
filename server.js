@@ -50,7 +50,7 @@ const logger = createLogger({
         new _transports.Console()
     ]
 });
-//app.use(json());
+app.use(json());
 // Middleware to log all incoming requests
 app.use((req, res, next) => {
     logger.info('Incoming request', {
@@ -61,7 +61,7 @@ app.use((req, res, next) => {
     });
     next();
 });
-app.post('/callback', async (req, res) => {
+app.post('/callback', authenticateBasicAuth, async (req, res) => {
     logger.info('Received request', { data: req.body });
     const miliseconds = parseInt(req.body.time)
     const callbackUrl = req.get('callbackUrl');
@@ -115,12 +115,12 @@ app.post('/callback_with_no_auth', async (req, res) => {
 
 });
 
-app.post('/log-payload', authenticateBasicAuth, (req, res) => {
-    console.log("+++++++++++++++++++++++++++++++");
-    console.log('Received payload', req.body);
-    console.log("+++++++++++++++++++++++++++++++");
-    res.json({ message: 'Payload received',payload: req.body });
-});
+// app.post('/log-payload', authenticateBasicAuth, (req, res) => {
+//     console.log("+++++++++++++++++++++++++++++++");
+//     console.log('Received payload', req.body);
+//     console.log("+++++++++++++++++++++++++++++++");
+//     res.json({ message: 'Payload received',payload: req.body });
+// });
 
 async function handler_async_response(callbackUrl, tenantId, correlationId, milliseconds) {
     try {
